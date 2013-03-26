@@ -1,4 +1,4 @@
-  // ==UserScript==
+// ==UserScript==
 // @name hatena
 // @namespace hatena
 // @include *
