@@ -3,6 +3,7 @@
 // @namespace hatena
 // @include *
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
+// @resource loadingIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131208/20131208222202.gif
 // ==/UserScript==
 
 // ignore iframe/frame
@@ -20,7 +21,7 @@ var usesLazyLoad = true;
 
 // ====== CONSTANTS ============================================================
 const HATENA_FAVICON_URL = 'http://b.hatena.ne.jp/favicon.ico';
-
+const LOADING_ICON_URL = GM_getResourceURL('loadingIcon');
 
 
 // ====== STYLE DEFINITIONS ====================================================
@@ -167,7 +168,7 @@ hatenaAnchor.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('h
 countTab.append(hatenaAnchor);
 
 var hatenaIcon = $('<img/>');
-hatenaIcon.attr('src', HATENA_FAVICON_URL);
+hatenaIcon.attr('src', LOADING_ICON_URL);
 hatenaIcon.css(imgStyle);
 hatenaAnchor.append(hatenaIcon);
 
@@ -193,6 +194,7 @@ GM_xmlhttpRequest({
 	method:'GET',
 	url:'http://api.b.st-hatena.com/entry.count?url='+encodeURIComponent(document.URL),
 	onload: function(response) {
+		hatenaIcon.attr('src', HATENA_FAVICON_URL);
 		if (response.responseText) {
 			count.text(response.responseText);
 		} else {
@@ -207,14 +209,14 @@ function retrieveComments() {
 		method:'GET',
 		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
-			GM_log('comments'+response.responseText);
+			hatenaIcon.attr('src', HATENA_FAVICON_URL);
 			if (response.responseText) {
 				var comments = JSON.parse(response.responseText);
 				for (var i in comments.bookmarks) {
 					var user = comments.bookmarks[i].user;
 					var comment = comments.bookmarks[i].comment;
 					if (comment) {
-						var item = $('<li/>')
+						var item = $('<li/>');
 						item.css(itemStyle);
 						item.text(user+':'+comment);
 						list.append(item);
@@ -232,9 +234,9 @@ if (!usesLazyLoad) {
 } else {
 	tab.mouseenter(function(event) {
 		if (!commentLoaded) {
+			hatenaIcon.attr('src', GM_getResourceURL('loadingIcon'));
 			retrieveComments();
 			commentLoaded=true;
 		}
 	});
 }
-	
