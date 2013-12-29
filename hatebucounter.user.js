@@ -178,16 +178,24 @@ var iframeStyle = {
 	,'vertical-align':'bottom'
 };
 
-var iframeStyle = iframeStyle;
+// ====== STYLE MANIPULATION ==================================================
+
+function showBlock(element) {
+	element.css('display','block');
+}
+
+function showInline(element) {
+	element.css('display','inline');
+}
+
+function hide(element) {
+	element.css('display','none');
+}
+
 
 // ====== DOM CREATION =========================================================
-var tab = $('<div/>');
-tab.css(tabStyle);
-$(document.body).append(tab);
-
 var iframe = $('<iframe/>');
 iframe.css(iframeStyle);
-//tab.append(iframe);
 $(document.body).append(iframe);
 iframe.commentLoaded = false;
 iframe.ready(function() {
@@ -201,98 +209,92 @@ iframe.ready(function() {
 });
 
 function constructIFrame(iframe) {
-	var ibody = iframe.body;
-	var closeIcon = $('#close',ibody);
-	var lockIcon = $('#lock', ibody);
-	var reloadIcon = $('#reload', ibody);
-	var hatebuIcon = $('#hatebufavicon', ibody);
-	var entryLink = $('#hatebuentrylink', ibody);
-	var countText = $('#count', ibody);
-	var errorIcon = $('#countloaderror', ibody);
-	iframe.closeIcon = closeIcon;
-	iframe.lockIcon = lockIcon;
-	iframe.reloadIcon = reloadIcon;
-	iframe.hatebuIcon = hatebuIcon;
-	iframe.entryLint = entryLink;
-	iframe.countText = countText;
-	iframe.errorIcon = errorIcon;
-	iframe.wrapper = $('#wrapper', ibody);
-	iframe.commentList = $('#commentlist', ibody);
 
-	closeIcon.attr('src', CLOSE_ICON_URL);
-	closeIcon.click(function() {
+	iframe.closeIcon = $('#close', iframe.body);
+	iframe.lockIcon = $('#lock', iframe.body);
+	iframe.reloadIcon = $('#reload', iframe.body);
+	iframe.hatebuIcon = $('#hatebufavicon', iframe.body);
+	iframe.entryLink = $('#hatebuentrylink', iframe.body);
+	iframe.countText = $('#count', iframe.body);
+	iframe.errorIcon = $('#countloaderror', iframe.body);
+	iframe.wrapper = $('#wrapper', iframe.body);
+	iframe.commentList = $('#commentlist', iframe.body);
+
+	iframe.closeIcon.attr('src', CLOSE_ICON_URL);
+	iframe.closeIcon.click(function() {
 		iframe.remove();
 	});
 
-	lockIcon.attr('src', UNLOCKED_ICON_URL);
-	lockIcon.isLocked = false;
-	lockIcon.click(function() {
-		if (lockIcon.isLocked) {
-			lockIcon.attr('src', UNLOCKED_ICON_URL);
-			lockIcon.isLocked = false;
+	iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
+	iframe.isLocked = false;
+	iframe.lockIcon.click(function() {
+		if (iframe.isLocked) {
+			iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
+			iframe.isLocked = false;
 		} else {
-			lockIcon.attr('src', LOCKED_ICON_URL);
-			lockIcon.isLocked = true;
+			iframe.lockIcon.attr('src', LOCKED_ICON_URL);
+			iframe.isLocked = true;
 		}
 	});
 
-	reloadIcon.attr('src', RELOAD_ICON_URL);
-	reloadIcon.click(function() {
+	iframe.reloadIcon.attr('src', RELOAD_ICON_URL);
+	iframe.reloadIcon.click(function() {
 		//TODO reload
 	});
 
-	hatebuIcon.attr('src', LOADING_ICON_URL);
-	hatebuIcon.css('display','inline');
-	hatebuIcon.load(function() {
-		setIFrameSize(ibody);
+	iframe.hatebuIcon.attr('src', LOADING_ICON_URL);
+	showInline(iframe.hatebuIcon);
+	iframe.hatebuIcon.load(function() {
+		setIFrameSize(iframe.body);
 	});
 
-	entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
-	entryLink.attr('target', '_blank');
+	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
+	iframe.entryLink.attr('target', '_blank');
 
-	errorIcon.attr('src', ERROR_ICON_URL);
-	errorIcon.css('display','none');
+	iframe.errorIcon.attr('src', ERROR_ICON_URL);
+	hide(iframe.errorIcon);
 
-	countText.text('-');
-	setIFrameSize(ibody);
+	iframe.countText.text('-');
+	setIFrameSize(iframe.body);
 
 	// retrieves a bookmark count.
 	GM_xmlhttpRequest({
 		method:'GET',
 		url:'http://api.b.st-hatena.com/entry.count?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
-			hatebuIcon.attr('src', HATENA_FAVICON_URL);
+			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
 			if (response.responseText) {
-				countText.text(response.responseText);
+				iframe.countText.text(response.responseText);
 			} else {
-				countText.text('0');
+				iframe.countText.text('0');
 			}
-			setIFrameSize(ibody);
+			setIFrameSize(iframe.body);
 		}
 	});
 
 	iframe.wrapper.mouseenter(function() {
-		closeIcon.css('display','inline');
-		lockIcon.css('display','inline');
-		reloadIcon.css('display','inline');
-		iframe.commentList.css('display','block');
-		setIFrameSize(ibody);
-		if (!commentLoaded && usesLazyLoad) {
-			hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
+		showInline(iframe.closeIcon);
+		showInline(iframe.lockIcon);
+		showInline(iframe.reloadIcon)
+		setIFrameSize(iframe.body);
+		if (!iframe.commentLoaded && usesLazyLoad) {
+			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
 			retrieveComments();
-			commentLoaded=true;
 			iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
+		} else if (iframe.commentLoaded) {
+			showBlock(iframe.commentList);
+			setIFrameSize(iframe.body);
 		}
 	});
 
 	iframe.wrapper.mouseleave(function() {
-		closeIcon.css('display','none');
-		lockIcon.css('display','none');
-		reloadIcon.css('display','none');
-		iframe.commentList.css('display','none');
-		setIFrameSize(ibody);
+		hide(iframe.closeIcon);
+		hide(iframe.lockIcon);
+		hide(iframe.reloadIcon);
+		hide(iframe.commentList);
+		setIFrameSize(iframe.body);
 	});
-
+	
 }
 
 function setIFrameSize(ibody) {
@@ -324,6 +326,7 @@ function retrieveComments() {
 		method:'GET',
 		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
+			iframe.commentLoaded=true;
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
 			if (response.responseText && response.responseText != 'null') {
 				try {
@@ -340,7 +343,8 @@ function retrieveComments() {
 				}
 				} catch(e) {alert(e);}
 			}
-			setIFrameSize(ibody);
+			showBlock(iframe.commentList);
+			setIFrameSize(iframe.body);
 		}
 	});
 }
