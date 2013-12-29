@@ -248,7 +248,6 @@ function constructIFrame(iframe) {
 	iframe.hatebuIcon.attr('src', LOADING_ICON_URL);
 	iframe.hatebuIcon.appear = showInline;
 	iframe.hatebuIcon.disappear = hide;
-//	showInline(iframe.hatebuIcon);
 	iframe.hatebuIcon.appear();
 	iframe.hatebuIcon.load(function() {
 		setIFrameSize(iframe.body);
@@ -305,6 +304,9 @@ function constructIFrame(iframe) {
 	});
 
 	iframe.wrapper.mouseleave(function() {
+		if (iframe.isLocked) {
+			return;
+		}
 		iframe.closeIcon.disappear();
 		iframe.lockIcon.disappear();
 		iframe.reloadIcon.disappear();
