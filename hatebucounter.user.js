@@ -269,7 +269,13 @@ function constructIFrame(iframe) {
 	iframe.errorIcon.disappear = hide;
 	iframe.errorIcon.disappear();
 
-	iframe.commentList.appear = showBlock;
+	iframe.commentList.appear = function() {
+		if (this.commentExists) {
+			this.css('display','block');
+		} else {
+			return;
+		}
+	};
 	iframe.commentList.disappear = hide;
 	iframe.commentList.disappear();
 	
@@ -278,21 +284,6 @@ function constructIFrame(iframe) {
 
 	// retrieves a bookmark count.
 	retrieveCount(iframe);
-	/*
-	GM_xmlhttpRequest({
-		method:'GET',
-		url:'http://api.b.st-hatena.com/entry.count?url='+encodeURIComponent(document.URL),
-		onload: function(response) {
-			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
-			if (response.responseText) {
-				iframe.countText.text(response.responseText);
-			} else {
-				iframe.countText.text('0');
-			}
-			setIFrameSize(iframe.body);
-		}
-	});
-	*/
 
 	if (usesLazyLoad) {
 		var commentLoadHandler = function() {
@@ -367,8 +358,8 @@ function retrieveComments(iframe) {
 						var item = $('<li/>');
 						item.text(user+':'+comment);
 						iframe.commentList.append(item);
+						iframe.commentList.commentExists = true;
 					}
-					
 				}
 			}
 			iframe.commentList.appear();
