@@ -107,22 +107,22 @@ var iframeContents = '\
       }\
     </style>\
   </head>\
-  <body>\
-    <div id="wrapper">\
-      <ul id="commentlist"></ul>\
-      <div id="messageline">\
-        <span id="message"></span>\
-      </div>\
-      <div id="counterline">\
-        <img id="close" class="icon action" alt="閉じる" title="閉じる">\
-        <img id="lock" class="icon action" alt="ロックする" title="ロックする">\
-        <img id="reload" class="icon action" alt="リロード" title="リロード">\
-        <a id="hatebuentrylink"><img id="hatebufavicon" class="icon" alt="はてなブックマークエントリーページへ" title="はてなブックマークエントリーページへ"></a>\
-        <span id="count"></span>\
-        <img id="countloaderror" class="icon">\
-      </div>\
-    </div>\
-  </body>\
+  <body><!--\
+    --><div id="wrapper"><!--\
+      --><ul id="commentlist"></ul><!--\
+      --><div id="messageline"><!--\
+        --><span id="message"></span><!--\
+      --></div><!--\
+      --><div id="counterline"><!--\
+        --><img id="close" class="icon action" alt="閉じる" title="閉じる"><!--\
+        --><img id="lock" class="icon action" alt="ロックする" title="ロックする"><!--\
+        --><img id="reload" class="icon action" alt="リロード" title="リロード"><!--\
+        --><a id="hatebuentrylink"><img id="hatebufavicon" class="icon" alt="はてなブックマークエントリーページへ" title="はてなブックマークエントリーページへ"></a><!--\
+        --><span id="count"></span><!--\
+        --><img id="countloaderror" class="icon"><!--\
+      --></div><!--\
+    --></div><!--\
+  --></body>\
 </html>\
 ';
 
