@@ -117,7 +117,7 @@ var iframeContents = '\
         --><img id="close" class="icon action" alt="閉じる" title="閉じる"><!--\
         --><img id="lock" class="icon action" alt="ロックする" title="ロックする"><!--\
         --><img id="reload" class="icon action" alt="リロード" title="リロード"><!--\
-        --><a id="hatebuentrylink"><img id="hatebufavicon" class="icon" alt="はてなブックマークエントリーページへ" title="はてなブックマークエントリーページへ"></a><!--\
+        --><a id="hatebuentrylink" target="_blank"><img id="hatebufavicon" class="icon" alt="はてなブックマークエントリーページへ" title="はてなブックマークエントリーページへ"></a><!--\
         --><span id="count"></span><!--\
         --><img id="countloaderror" class="icon"><!--\
       --></div><!--\
@@ -249,7 +249,6 @@ function constructIFrame(iframe) {
 	});
 
 	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
-	iframe.entryLink.attr('target', '_blank');
 
 	iframe.errorIcon.attr('src', ERROR_ICON_URL);
 	hide(iframe.errorIcon);
