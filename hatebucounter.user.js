@@ -283,19 +283,25 @@ function constructIFrame(iframe) {
 		}
 	});
 
+	if (usesLazyLoad) {
+		var commentLoadHandler = function() {
+			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
+			retrieveComments();
+			iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
+			iframe.wrapper.unbind('mouseenter', commentLoadHandler);
+		};
+		iframe.wrapper.mouseenter(commentLoadHandler);
+	}
+
+
 	iframe.wrapper.mouseenter(function() {
 		iframe.closeIcon.appear();
 		iframe.lockIcon.appear();
 		iframe.reloadIcon.appear();
-		setIFrameSize(iframe.body);
-		if (!iframe.commentLoaded && usesLazyLoad) {
-			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
-			retrieveComments();
-			iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
-		} else if (iframe.commentLoaded) {
+		if (iframe.commentLoaded) {
 			iframe.commentList.appear();
-			setIFrameSize(iframe.body);
 		}
+		setIFrameSize(iframe.body);
 	});
 
 	iframe.wrapper.mouseleave(function() {
@@ -305,7 +311,6 @@ function constructIFrame(iframe) {
 		iframe.commentList.disappear();
 		setIFrameSize(iframe.body);
 	});
-	
 }
 
 function setIFrameSize(ibody) {
