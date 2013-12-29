@@ -178,21 +178,6 @@ var iframeStyle = {
 	,'vertical-align':'bottom'
 };
 
-// ====== STYLE MANIPULATION ==================================================
-
-function showBlock(element) {
-	element.css('display','block');
-}
-
-function showInline(element) {
-	element.css('display','inline');
-}
-
-function hide(element) {
-	element.css('display','none');
-}
-
-
 // ====== DOM CREATION =========================================================
 var iframe = $('<iframe/>');
 iframe.css(iframeStyle);
@@ -220,13 +205,29 @@ function constructIFrame(iframe) {
 	iframe.wrapper = $('#wrapper', iframe.body);
 	iframe.commentList = $('#commentlist', iframe.body);
 
+	function showInline() {
+		this.css('display', 'inline');
+	}
+
+	function showBlock() {
+		this.css('display', 'block');
+	}
+
+	function hide() {
+		this.css('display', 'none');
+	}
+
 	iframe.closeIcon.attr('src', CLOSE_ICON_URL);
+	iframe.closeIcon.appear = showInline;
+	iframe.closeIcon.disappear = hide;
 	iframe.closeIcon.click(function() {
 		iframe.remove();
 	});
 
-	iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
 	iframe.isLocked = false;
+	iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
+	iframe.lockIcon.appear = showInline;
+	iframe.lockIcon.disappear = hide;
 	iframe.lockIcon.click(function() {
 		if (iframe.isLocked) {
 			iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
@@ -238,12 +239,17 @@ function constructIFrame(iframe) {
 	});
 
 	iframe.reloadIcon.attr('src', RELOAD_ICON_URL);
+	iframe.reloadIcon.appear = showInline;
+	iframe.reloadIcon.disappear = hide;
 	iframe.reloadIcon.click(function() {
 		//TODO reload
 	});
 
 	iframe.hatebuIcon.attr('src', LOADING_ICON_URL);
-	showInline(iframe.hatebuIcon);
+	iframe.hatebuIcon.appear = showInline;
+	iframe.hatebuIcon.disappear = hide;
+//	showInline(iframe.hatebuIcon);
+	iframe.hatebuIcon.appear();
 	iframe.hatebuIcon.load(function() {
 		setIFrameSize(iframe.body);
 	});
@@ -251,8 +257,14 @@ function constructIFrame(iframe) {
 	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
 
 	iframe.errorIcon.attr('src', ERROR_ICON_URL);
-	hide(iframe.errorIcon);
+	iframe.errorIcon.appear = showInline;
+	iframe.errorIcon.disappear = hide;
+	iframe.errorIcon.disappear();
 
+	iframe.commentList.appear = showBlock;
+	iframe.commentList.disappear = hide;
+	iframe.commentList.disappear();
+	
 	iframe.countText.text('-');
 	setIFrameSize(iframe.body);
 
@@ -272,25 +284,25 @@ function constructIFrame(iframe) {
 	});
 
 	iframe.wrapper.mouseenter(function() {
-		showInline(iframe.closeIcon);
-		showInline(iframe.lockIcon);
-		showInline(iframe.reloadIcon)
+		iframe.closeIcon.appear();
+		iframe.lockIcon.appear();
+		iframe.reloadIcon.appear();
 		setIFrameSize(iframe.body);
 		if (!iframe.commentLoaded && usesLazyLoad) {
 			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
 			retrieveComments();
 			iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
 		} else if (iframe.commentLoaded) {
-			showBlock(iframe.commentList);
+			iframe.commentList.appear();
 			setIFrameSize(iframe.body);
 		}
 	});
 
 	iframe.wrapper.mouseleave(function() {
-		hide(iframe.closeIcon);
-		hide(iframe.lockIcon);
-		hide(iframe.reloadIcon);
-		hide(iframe.commentList);
+		iframe.closeIcon.disappear();
+		iframe.lockIcon.disappear();
+		iframe.reloadIcon.disappear();
+		iframe.commentList.disappear();
 		setIFrameSize(iframe.body);
 	});
 	
@@ -342,7 +354,7 @@ function retrieveComments() {
 				}
 				} catch(e) {alert(e);}
 			}
-			showBlock(iframe.commentList);
+			iframe.commentList.appear();
 			setIFrameSize(iframe.body);
 		}
 	});
