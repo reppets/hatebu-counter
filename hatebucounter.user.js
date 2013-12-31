@@ -37,6 +37,8 @@ const CLOSE_ICON_URL = GM_getResourceURL('closeIcon');
 const ERROR_ICON_URL = GM_getResourceURL('errorIcon');
 const RELOAD_ICON_URL = GM_getResourceURL('reloadIcon');
 
+const MESSAGE_NO_COMMENT = 'コメントはありません';
+
 // ====== IFRAME CONTENTS ======================================================
 var iframeContents = '\
 <!DOCTYPE html>\
@@ -76,7 +78,7 @@ var iframeContents = '\
         width: 500px;\
         height: auto;\
         white-space: normal;\
-        overflow-y: scroll;\
+        overflow-y: auto;\
       }\
       #commentlist li {\
         margin-bottom: 1.1ex;\
@@ -85,6 +87,10 @@ var iframeContents = '\
       }\
       #messageline {\
         margin:  0  0.8em  0  0.8em;\
+        padding: 0.5em;\
+        height: auto;\
+        width: auto;\
+        overflow: auto;\
         display: none;\
       }\
       #counterline {\
@@ -92,6 +98,9 @@ var iframeContents = '\
         margin: 0;\
         border: 0;\
         text-align: right;\
+        width: auto;\
+        height: auto;\
+        display: block;\
       }\
       #count {\
         vertical-align:middle;\
@@ -204,6 +213,8 @@ function constructIFrame(iframe) {
 	iframe.errorIcon = $('#countloaderror', iframe.body);
 	iframe.wrapper = $('#wrapper', iframe.body);
 	iframe.commentList = $('#commentlist', iframe.body);
+	iframe.messageText = $('#message', iframe.body);
+	iframe.messageLine = $('#messageline', iframe.body);
 
 	function showInline() {
 		this.css('display', 'inline');
@@ -270,7 +281,7 @@ function constructIFrame(iframe) {
 	iframe.errorIcon.disappear();
 
 	iframe.commentList.appear = function() {
-		if (this.commentExists) {
+		if (this.hasComment) {
 			this.css('display','block');
 		} else {
 			return;
@@ -282,6 +293,11 @@ function constructIFrame(iframe) {
 	iframe.countText.text('-');
 	setIFrameSize(iframe.body);
 
+	iframe.messageLine.appear = showBlock;
+	iframe.messageLine.disappear = hide;
+	iframe.messageText.appear = showInline;
+	iframe.messageText.disappear = hide;
+	
 	// retrieves a bookmark count.
 	retrieveCount(iframe);
 
@@ -300,8 +316,11 @@ function constructIFrame(iframe) {
 		iframe.closeIcon.appear();
 		iframe.lockIcon.appear();
 		iframe.reloadIcon.appear();
-		if (iframe.commentLoaded) {
+		if (iframe.commentList.hasComment) {
 			iframe.commentList.appear();
+		}
+		if (iframe.messageLine.hasMessage) {
+			iframe.messageLine.appear();
 		}
 		setIFrameSize(iframe.body);
 	});
@@ -314,6 +333,7 @@ function constructIFrame(iframe) {
 		iframe.lockIcon.disappear();
 		iframe.reloadIcon.disappear();
 		iframe.commentList.disappear();
+		iframe.messageLine.disappear();
 		setIFrameSize(iframe.body);
 	});
 }
@@ -358,9 +378,20 @@ function retrieveComments(iframe) {
 						var item = $('<li/>');
 						item.text(user+':'+comment);
 						iframe.commentList.append(item);
-						iframe.commentList.commentExists = true;
+						iframe.commentList.hasComment = true;
 					}
 				}
+				if (!iframe.commentList.hasComment) {
+					iframe.messageText.text(MESSAGE_NO_COMMENT);
+					iframe.messageText.appear();
+					iframe.messageLine.appear();
+					iframe.messageLine.hasMessage = true;
+				}
+			} else {
+				iframe.messageText.text(MESSAGE_NO_COMMENT);
+				iframe.messageText.appear();
+				iframe.messageLine.appear();
+				iframe.messageLine.hasMessage = true;
 			}
 			iframe.commentList.appear();
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
