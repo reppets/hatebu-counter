@@ -154,18 +154,8 @@ var tabStyle = {
 	,'height':'auto'
 	,'background':'rgba(1,0,0,0.8) none'
 };
-var tabExpandStyle = {
-	'width':'500px'
-	,'height':'auto'
-	,'max-height':'50%'
-};
-var tabShrinkStyle = {
-	'width':'auto'
-	,'height':'auto'
-};
 
 var iframeStyle = {
-//	'position':'absolute'
 	'position':'fixed'
 	,'z-index':'2147483647'
 	,'display':'block'
@@ -289,6 +279,7 @@ function constructIFrame(iframe) {
 	};
 	iframe.commentList.disappear = hide;
 	iframe.commentList.disappear();
+	iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
 	
 	iframe.countText.text('-');
 	setIFrameSize(iframe.body);
@@ -305,7 +296,6 @@ function constructIFrame(iframe) {
 		var commentLoadHandler = function() {
 			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
 			retrieveComments(iframe);
-			iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
 			iframe.wrapper.unbind('mouseenter', commentLoadHandler);
 		};
 		iframe.wrapper.mouseenter(commentLoadHandler);
@@ -336,6 +326,12 @@ function constructIFrame(iframe) {
 		iframe.messageLine.disappear();
 		setIFrameSize(iframe.body);
 	});
+
+
+	$(window).resize(function() {
+		iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
+	});
+		
 }
 
 function setIFrameSize(ibody) {
