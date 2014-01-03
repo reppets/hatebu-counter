@@ -39,6 +39,8 @@ const RELOAD_ICON_URL = GM_getResourceURL('reloadIcon');
 
 const MESSAGE_NO_COMMENT = 'コメントはありません';
 
+const INTENTIONAL_RELOAD_DELAY_MSEC = 350;
+
 // ====== IFRAME CONTENTS ======================================================
 var iframeContents = '\
 <!DOCTYPE html>\
@@ -219,6 +221,11 @@ function constructIcon(element, src, isDisplayable) {
 	return element;
 }
 
+function setMessage(iframe, message) {
+	iframe.messageText.text(message);
+	iframe.messageLine.isDisplayable = true;
+}
+
 function expand(iframe) {
 	iframe.isExpanded = true;
 	
@@ -245,6 +252,14 @@ function shrink(iframe) {
 	iframe.messageLine.disappear();
 
 	setIFrameSize(iframe);
+}
+
+function update(iframe) {
+	if (iframe.isExpanded) {
+		expand(iframe);
+	} else {
+		shrink(iframe);
+	}
 }
 
 function setIFrameSize(iframe) {
@@ -288,7 +303,7 @@ function constructIFrame(iframe) {
 				retrieveCount(iframe);
 				retrieveComments(iframe);
 			}
-			, 350);
+			, INTENTIONAL_RELOAD_DELAY_MSEC);
 	});
 
 	iframe.hatebuIcon = constructIcon($('#hatebufavicon', iframe.body), LOADING_ICON_URL, true);
@@ -349,13 +364,22 @@ function retrieveCount(iframe) {
 		method:'GET',
 		url:'http://api.b.st-hatena.com/entry.count?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
+			if (response.status >= 400) {
+				iframe.errorIcon.isDisplayable = true;
+				var errorComment = 'ブックマーク数取得エラー: '+response.status+' '+response.statusText;
+				iframe.errorIcon.attr('alt', errorComment);
+				iframe.errorIcon.attr('title', errorComment);
+				update(iframe);
+				return;
+			}
+			
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
 			if (response.responseText) {
 				iframe.countText.text(response.responseText);
 			} else {
 				iframe.countText.text('0');
 			}
-			refresh(iframe);
+			update(iframe);
 		}
 	});
 }
@@ -365,7 +389,9 @@ function retrieveComments(iframe) {
 		method:'GET',
 		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
-			if (response.responseText && response.responseText != 'null') {
+			if (response.status >= 400) {
+				setMessage(iframe, 'コメント取得エラー : '+response.status + ' '+response.statusText);
+			} else if (response.responseText && response.responseText != 'null') {
 				var comments = JSON.parse(response.responseText);
 				for (var i in comments.bookmarks) {
 					var user = comments.bookmarks[i].user;
@@ -379,25 +405,15 @@ function retrieveComments(iframe) {
 					}
 				}
 				if (!hasComment) {
-					iframe.messageText.text(MESSAGE_NO_COMMENT);
-					iframe.messageLine.isDisplayable = true;
+					setMessage(iframe, MESSAGE_NO_COMMENT);
 				}
 			} else {
-				iframe.messageText.text(MESSAGE_NO_COMMENT);
-				iframe.messageLine.isDisplayable = true;
+				setMessage(MESSAGE_NO_COMMENT);
 			}
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
 
-			refresh(iframe);
+			update(iframe);
 		}
 	});
 }
 
-
-function refresh(iframe) {
-	if (iframe.isExpanded) {
-		expand(iframe);
-	} else {
-		shrink(iframe);
-	}
-}
