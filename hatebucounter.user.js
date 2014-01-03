@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name hatena
-// @namespace hatena
+// @name hatebu-scouter
+// @namespace http://reppets.hatenablog.com/
 // @include *
 // @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @resource loadingIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131208/20131208222202.gif
