@@ -190,45 +190,78 @@ iframe.ready(function() {
 	iframe.document = idoc;
 	iframe.body = $('body',idoc);
 	constructIFrame(iframe);
+	retrieveCount(iframe);
+	if (!usesLazyLoad) {
+		retrieveComments(iframe);
+	}
 });
 
+function showInline() {
+	this.css('display', 'inline');
+}
+
+function showBlock() {
+	this.css('display', 'block');
+}
+
+function hide() {
+	this.css('display', 'none');
+}
+
+function constructIcon(element, src) {
+	element.attr('src', src);
+	element.appear = showInline;
+	element.disappear = hide;
+	return element;
+}
+
+function expand(iframe) {
+	iframe.closeIcon.appear();
+	iframe.lockIcon.appear();
+	iframe.reloadIcon.appear();
+	if (iframe.commentList.hasComment) {
+		iframe.commentList.appear();
+	}
+	if (iframe.messageLine.hasMessage) {
+		iframe.messageLine.appear();
+	}
+	
+	setIFrameSize(iframe.body);
+}
+
+function shrink(iframe) {
+	if (iframe.isLocked) {
+		return;
+	}
+	iframe.closeIcon.disappear();
+	iframe.lockIcon.disappear();
+	iframe.reloadIcon.disappear();
+	iframe.commentList.disappear();
+	iframe.messageLine.disappear();
+
+	setIFrameSize(iframe.body);
+}
+
+function setIFrameSize(ibody) {
+	ibody.ready(function() {
+		var newHeight = $('#wrapper',ibody).outerHeight();
+		var newWidth = $('#wrapper',ibody).outerWidth();
+		iframe.css('height',newHeight+'px');
+		iframe.css('width',newWidth+'px');
+	});
+}
+
 function constructIFrame(iframe) {
+	// set iframe attributes
+	iframe.isLocked = false;
 
-	iframe.closeIcon = $('#close', iframe.body);
-	iframe.lockIcon = $('#lock', iframe.body);
-	iframe.reloadIcon = $('#reload', iframe.body);
-	iframe.hatebuIcon = $('#hatebufavicon', iframe.body);
-	iframe.entryLink = $('#hatebuentrylink', iframe.body);
-	iframe.countText = $('#count', iframe.body);
-	iframe.errorIcon = $('#countloaderror', iframe.body);
-	iframe.wrapper = $('#wrapper', iframe.body);
-	iframe.commentList = $('#commentlist', iframe.body);
-	iframe.messageText = $('#message', iframe.body);
-	iframe.messageLine = $('#messageline', iframe.body);
-
-	function showInline() {
-		this.css('display', 'inline');
-	}
-
-	function showBlock() {
-		this.css('display', 'block');
-	}
-
-	function hide() {
-		this.css('display', 'none');
-	}
-
-	iframe.closeIcon.attr('src', CLOSE_ICON_URL);
-	iframe.closeIcon.appear = showInline;
-	iframe.closeIcon.disappear = hide;
+	// set icons
+	iframe.closeIcon = constructIcon($('#close', iframe.body), CLOSE_ICON_URL);
 	iframe.closeIcon.click(function() {
 		iframe.remove();
 	});
 
-	iframe.isLocked = false;
-	iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
-	iframe.lockIcon.appear = showInline;
-	iframe.lockIcon.disappear = hide;
+	iframe.lockIcon = constructIcon($('#lock', iframe.body), UNLOCKED_ICON_URL);
 	iframe.lockIcon.click(function() {
 		if (iframe.isLocked) {
 			iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
@@ -239,9 +272,7 @@ function constructIFrame(iframe) {
 		}
 	});
 
-	iframe.reloadIcon.attr('src', RELOAD_ICON_URL);
-	iframe.reloadIcon.appear = showInline;
-	iframe.reloadIcon.disappear = hide;
+	iframe.reloadIcon = constructIcon($('#reload', iframe.body), RELOAD_ICON_URL);
 	iframe.reloadIcon.click(function() {
 		iframe.hatebuIcon.attr('src', LOADING_ICON_URL);
 		iframe.countText.text('-');
@@ -254,22 +285,23 @@ function constructIFrame(iframe) {
 			}
 			, 350);
 	});
-							
-	iframe.hatebuIcon.attr('src', LOADING_ICON_URL);
-	iframe.hatebuIcon.appear = showInline;
-	iframe.hatebuIcon.disappear = hide;
+
+	iframe.hatebuIcon = constructIcon($('#hatebufavicon', iframe.body), LOADING_ICON_URL);
 	iframe.hatebuIcon.appear();
 	iframe.hatebuIcon.load(function() {
+		// TODO should it be here?
 		setIFrameSize(iframe.body);
 	});
 
+
+	iframe.errorIcon = constructIcon($('#countloaderror', iframe.body), ERROR_ICON_URL);
+
+
+	// set other elements
+	iframe.entryLink = $('#hatebuentrylink', iframe.body);
 	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
 
-	iframe.errorIcon.attr('src', ERROR_ICON_URL);
-	iframe.errorIcon.appear = showInline;
-	iframe.errorIcon.disappear = hide;
-	iframe.errorIcon.disappear();
-
+	iframe.commentList = $('#commentlist', iframe.body);
 	iframe.commentList.appear = function() {
 		if (this.hasComment) {
 			this.css('display','block');
@@ -278,20 +310,23 @@ function constructIFrame(iframe) {
 		}
 	};
 	iframe.commentList.disappear = hide;
-	iframe.commentList.disappear();
 	iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
-	
-	iframe.countText.text('-');
-	setIFrameSize(iframe.body);
 
+
+	iframe.messageText = $('#message', iframe.body);
+	iframe.messageLine = $('#messageline', iframe.body);
 	iframe.messageLine.appear = showBlock;
 	iframe.messageLine.disappear = hide;
-	iframe.messageText.appear = showInline;
-	iframe.messageText.disappear = hide;
-	
-	// retrieves a bookmark count.
-	retrieveCount(iframe);
 
+	iframe.countText = $('#count', iframe.body);
+	iframe.countText.text('-');
+
+	iframe.wrapper = $('#wrapper', iframe.body);
+
+	
+	setIFrameSize(iframe.body);
+
+	
 	if (usesLazyLoad) {
 		var commentLoadHandler = function() {
 			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
@@ -303,43 +338,15 @@ function constructIFrame(iframe) {
 
 
 	iframe.wrapper.mouseenter(function() {
-		iframe.closeIcon.appear();
-		iframe.lockIcon.appear();
-		iframe.reloadIcon.appear();
-		if (iframe.commentList.hasComment) {
-			iframe.commentList.appear();
-		}
-		if (iframe.messageLine.hasMessage) {
-			iframe.messageLine.appear();
-		}
-		setIFrameSize(iframe.body);
+		expand(iframe);
 	});
 
 	iframe.wrapper.mouseleave(function() {
-		if (iframe.isLocked) {
-			return;
-		}
-		iframe.closeIcon.disappear();
-		iframe.lockIcon.disappear();
-		iframe.reloadIcon.disappear();
-		iframe.commentList.disappear();
-		iframe.messageLine.disappear();
-		setIFrameSize(iframe.body);
+		shrink(iframe);
 	});
-
 
 	$(window).resize(function() {
 		iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
-	});
-		
-}
-
-function setIFrameSize(ibody) {
-	ibody.ready(function() {
-		var newHeight = $('#wrapper',ibody).outerHeight();
-		var newWidth = $('#wrapper',ibody).outerWidth();
-		iframe.css('height',newHeight+'px');
-		iframe.css('width',newWidth+'px');
 	});
 }
 
@@ -379,13 +386,11 @@ function retrieveComments(iframe) {
 				}
 				if (!iframe.commentList.hasComment) {
 					iframe.messageText.text(MESSAGE_NO_COMMENT);
-					iframe.messageText.appear();
 					iframe.messageLine.appear();
 					iframe.messageLine.hasMessage = true;
 				}
 			} else {
 				iframe.messageText.text(MESSAGE_NO_COMMENT);
-				iframe.messageText.appear();
 				iframe.messageLine.appear();
 				iframe.messageLine.hasMessage = true;
 			}
@@ -396,7 +401,3 @@ function retrieveComments(iframe) {
 	});
 }
 
-var commentLoaded = false;
-if (!usesLazyLoad) {
-	retrieveComments(iframe);
-}
