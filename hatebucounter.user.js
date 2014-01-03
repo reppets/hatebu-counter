@@ -181,7 +181,6 @@ var iframeStyle = {
 var iframe = $('<iframe/>');
 iframe.css(iframeStyle);
 $(document.body).append(iframe);
-iframe.commentLoaded = false;
 iframe.ready(function() {
 	var idoc = iframe.contents()[0];
 	idoc.open();
@@ -197,55 +196,61 @@ iframe.ready(function() {
 });
 
 function showInline() {
-	this.css('display', 'inline');
+	if (this.isDisplayable) {
+		this.css('display', 'inline');
+	}
 }
 
 function showBlock() {
-	this.css('display', 'block');
+	if (this.isDisplayable) {
+		this.css('display', 'block');
+	}
 }
 
 function hide() {
 	this.css('display', 'none');
 }
 
-function constructIcon(element, src) {
+function constructIcon(element, src, isDisplayable) {
 	element.attr('src', src);
 	element.appear = showInline;
 	element.disappear = hide;
+	element.isDisplayable = isDisplayable;
 	return element;
 }
 
 function expand(iframe) {
+	iframe.isExpanded = true;
+	
 	iframe.closeIcon.appear();
 	iframe.lockIcon.appear();
 	iframe.reloadIcon.appear();
-	if (iframe.commentList.hasComment) {
-		iframe.commentList.appear();
-	}
-	if (iframe.messageLine.hasMessage) {
-		iframe.messageLine.appear();
-	}
+	iframe.commentList.appear();
+	iframe.messageLine.appear();
 	
-	setIFrameSize(iframe.body);
+	setIFrameSize(iframe);
 }
 
 function shrink(iframe) {
 	if (iframe.isLocked) {
 		return;
 	}
+
+	iframe.isExpanded = false;
+
 	iframe.closeIcon.disappear();
 	iframe.lockIcon.disappear();
 	iframe.reloadIcon.disappear();
 	iframe.commentList.disappear();
 	iframe.messageLine.disappear();
 
-	setIFrameSize(iframe.body);
+	setIFrameSize(iframe);
 }
 
-function setIFrameSize(ibody) {
-	ibody.ready(function() {
-		var newHeight = $('#wrapper',ibody).outerHeight();
-		var newWidth = $('#wrapper',ibody).outerWidth();
+function setIFrameSize(iframe) {
+	iframe.body.ready(function() {
+		var newHeight = $('#wrapper',iframe.body).outerHeight();
+		var newWidth = $('#wrapper',iframe.body).outerWidth();
 		iframe.css('height',newHeight+'px');
 		iframe.css('width',newWidth+'px');
 	});
@@ -256,12 +261,12 @@ function constructIFrame(iframe) {
 	iframe.isLocked = false;
 
 	// set icons
-	iframe.closeIcon = constructIcon($('#close', iframe.body), CLOSE_ICON_URL);
+	iframe.closeIcon = constructIcon($('#close', iframe.body), CLOSE_ICON_URL, true);
 	iframe.closeIcon.click(function() {
 		iframe.remove();
 	});
 
-	iframe.lockIcon = constructIcon($('#lock', iframe.body), UNLOCKED_ICON_URL);
+	iframe.lockIcon = constructIcon($('#lock', iframe.body), UNLOCKED_ICON_URL, true);
 	iframe.lockIcon.click(function() {
 		if (iframe.isLocked) {
 			iframe.lockIcon.attr('src', UNLOCKED_ICON_URL);
@@ -272,7 +277,7 @@ function constructIFrame(iframe) {
 		}
 	});
 
-	iframe.reloadIcon = constructIcon($('#reload', iframe.body), RELOAD_ICON_URL);
+	iframe.reloadIcon = constructIcon($('#reload', iframe.body), RELOAD_ICON_URL, true);
 	iframe.reloadIcon.click(function() {
 		iframe.hatebuIcon.attr('src', LOADING_ICON_URL);
 		iframe.countText.text('-');
@@ -286,15 +291,10 @@ function constructIFrame(iframe) {
 			, 350);
 	});
 
-	iframe.hatebuIcon = constructIcon($('#hatebufavicon', iframe.body), LOADING_ICON_URL);
+	iframe.hatebuIcon = constructIcon($('#hatebufavicon', iframe.body), LOADING_ICON_URL, true);
 	iframe.hatebuIcon.appear();
-	iframe.hatebuIcon.load(function() {
-		// TODO should it be here?
-		setIFrameSize(iframe.body);
-	});
 
-
-	iframe.errorIcon = constructIcon($('#countloaderror', iframe.body), ERROR_ICON_URL);
+	iframe.errorIcon = constructIcon($('#countloaderror', iframe.body), ERROR_ICON_URL, false);
 
 
 	// set other elements
@@ -302,31 +302,26 @@ function constructIFrame(iframe) {
 	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
 
 	iframe.commentList = $('#commentlist', iframe.body);
-	iframe.commentList.appear = function() {
-		if (this.hasComment) {
-			this.css('display','block');
-		} else {
-			return;
-		}
-	};
+	iframe.commentList.appear = showBlock;
 	iframe.commentList.disappear = hide;
 	iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
-
+	iframe.commentList.isDisplayable = false;
 
 	iframe.messageText = $('#message', iframe.body);
 	iframe.messageLine = $('#messageline', iframe.body);
 	iframe.messageLine.appear = showBlock;
 	iframe.messageLine.disappear = hide;
+	iframe.messageLine.isDisplayable = false;
 
 	iframe.countText = $('#count', iframe.body);
 	iframe.countText.text('-');
 
 	iframe.wrapper = $('#wrapper', iframe.body);
+	
+	shrink(iframe);
 
 	
-	setIFrameSize(iframe.body);
-
-	
+	// event handlers
 	if (usesLazyLoad) {
 		var commentLoadHandler = function() {
 			iframe.hatebuIcon.attr('src', GM_getResourceURL('loadingIcon'));
@@ -335,7 +330,6 @@ function constructIFrame(iframe) {
 		};
 		iframe.wrapper.mouseenter(commentLoadHandler);
 	}
-
 
 	iframe.wrapper.mouseenter(function() {
 		expand(iframe);
@@ -361,7 +355,7 @@ function retrieveCount(iframe) {
 			} else {
 				iframe.countText.text('0');
 			}
-			setIFrameSize(iframe.body);
+			refresh(iframe);
 		}
 	});
 }
@@ -371,7 +365,6 @@ function retrieveComments(iframe) {
 		method:'GET',
 		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
-			iframe.commentLoaded=true;
 			if (response.responseText && response.responseText != 'null') {
 				var comments = JSON.parse(response.responseText);
 				for (var i in comments.bookmarks) {
@@ -379,25 +372,32 @@ function retrieveComments(iframe) {
 					var comment = comments.bookmarks[i].comment;
 					if (comment) {
 						var item = $('<li/>');
-						item.text(user+':'+comment);
+						item.text(user+' : '+comment);
 						iframe.commentList.append(item);
-						iframe.commentList.hasComment = true;
+						iframe.commentList.isDisplayable = true;
+						var hasComment = true;
 					}
 				}
-				if (!iframe.commentList.hasComment) {
+				if (!hasComment) {
 					iframe.messageText.text(MESSAGE_NO_COMMENT);
-					iframe.messageLine.appear();
-					iframe.messageLine.hasMessage = true;
+					iframe.messageLine.isDisplayable = true;
 				}
 			} else {
 				iframe.messageText.text(MESSAGE_NO_COMMENT);
-				iframe.messageLine.appear();
-				iframe.messageLine.hasMessage = true;
+				iframe.messageLine.isDisplayable = true;
 			}
-			iframe.commentList.appear();
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
-			setIFrameSize(iframe.body);
+
+			refresh(iframe);
 		}
 	});
 }
 
+
+function refresh(iframe) {
+	if (iframe.isExpanded) {
+		expand(iframe);
+	} else {
+		shrink(iframe);
+	}
+}
