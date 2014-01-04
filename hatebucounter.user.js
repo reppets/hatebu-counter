@@ -233,59 +233,58 @@ function constructIcon(element, src, isDisplayable) {
 	return element;
 }
 
-function setMessage(iframe, message) {
-	iframe.messageText.text(message);
-	iframe.messageLine.isDisplayable = true;
-}
+function constructIFrame(iframe) {
+	// set iframe attributes
+	iframe.isLocked = false;
 
-function expand(iframe) {
-	iframe.isExpanded = true;
-	
-	iframe.closeIcon.appear();
-	iframe.lockIcon.appear();
-	iframe.reloadIcon.appear();
-	iframe.commentList.appear();
-	iframe.messageLine.appear();
-	
-	setIFrameSize(iframe);
-}
+	// methods
+	iframe.update = function() {
+		if (this.isExpanded) {
+			this.expand();
+		} else {
+			this.shrink();
+		}
+	};
 
-function shrink(iframe) {
-	if (iframe.isLocked) {
-		return;
-	}
+	iframe.expand = function() {
+		this.isExpanded = true;
+		
+		this.closeIcon.appear();
+		this.lockIcon.appear();
+		this.reloadIcon.appear();
+		this.commentList.appear();
+		this.messageLine.appear();
+		
+		this.setIFrameSize();
+	};
 
-	iframe.isExpanded = false;
+	iframe.shrink = function() {
+		if (this.isLocked) {
+			return;
+		}
+		
+		this.isExpanded = false;
+		
+		this.closeIcon.disappear();
+		this.lockIcon.disappear();
+		this.reloadIcon.disappear();
+		this.commentList.disappear();
+		this.messageLine.disappear();
+		
+		this.setIFrameSize();
+	};
 
-	iframe.closeIcon.disappear();
-	iframe.lockIcon.disappear();
-	iframe.reloadIcon.disappear();
-	iframe.commentList.disappear();
-	iframe.messageLine.disappear();
+	iframe.setMessage = function( message) {
+		this.messageText.text(message);
+		this.messageLine.isDisplayable = true;
+	};
 
-	setIFrameSize(iframe);
-}
-
-function update(iframe) {
-	if (iframe.isExpanded) {
-		expand(iframe);
-	} else {
-		shrink(iframe);
-	}
-}
-
-function setIFrameSize(iframe) {
-	iframe.body.ready(function() {
+	iframe.setIFrameSize = function() {
 		var newHeight = $('#wrapper',iframe.body).outerHeight();
 		var newWidth = $('#wrapper',iframe.body).outerWidth();
 		iframe.css('height',newHeight+'px');
 		iframe.css('width',newWidth+'px');
-	});
-}
-
-function constructIFrame(iframe) {
-	// set iframe attributes
-	iframe.isLocked = false;
+	};
 
 	// set icons
 	iframe.closeIcon = constructIcon($('#close', iframe.body), CLOSE_ICON_URL, true);
@@ -345,7 +344,7 @@ function constructIFrame(iframe) {
 
 	iframe.wrapper = $('#wrapper', iframe.body);
 	
-	shrink(iframe);
+	iframe.shrink();
 
 	
 	// event handlers
@@ -359,16 +358,17 @@ function constructIFrame(iframe) {
 	}
 
 	iframe.wrapper.mouseenter(function() {
-		expand(iframe);
+		iframe.expand();
 	});
 
 	iframe.wrapper.mouseleave(function() {
-		shrink(iframe);
+		iframe.shrink();
 	});
 
 	$(window).resize(function() {
 		iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
 	});
+
 }
 
 function retrieveCount(iframe) {
@@ -381,7 +381,7 @@ function retrieveCount(iframe) {
 				var errorComment = 'ブックマーク数取得エラー: '+response.status+' '+response.statusText;
 				iframe.errorIcon.attr('alt', errorComment);
 				iframe.errorIcon.attr('title', errorComment);
-				update(iframe);
+				iframe.update();
 				return;
 			}
 			
@@ -391,7 +391,7 @@ function retrieveCount(iframe) {
 			} else {
 				iframe.countText.text('0');
 			}
-			update(iframe);
+			iframe.update();
 		}
 	});
 }
@@ -402,7 +402,7 @@ function retrieveComments(iframe) {
 		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(document.URL),
 		onload: function(response) {
 			if (response.status >= 400) {
-				setMessage(iframe, 'コメント取得エラー : '+response.status + ' '+response.statusText);
+				iframe.setMessage('コメント取得エラー : '+response.status + ' '+response.statusText);
 			} else if (response.responseText && response.responseText != 'null') {
 				var comments = JSON.parse(response.responseText);
 				var hasComment = false;
@@ -418,14 +418,14 @@ function retrieveComments(iframe) {
 					}
 				}
 				if (!hasComment) {
-					setMessage(iframe, MESSAGE_NO_COMMENT);
+					iframe.setMessage(MESSAGE_NO_COMMENT);
 				}
 			} else {
-				setMessage(iframe, MESSAGE_NO_COMMENT);
+				iframe.setMessage(MESSAGE_NO_COMMENT);
 			}
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
 
-			update(iframe);
+			iframe.update();
 		}
 	});
 }
