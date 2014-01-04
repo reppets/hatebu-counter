@@ -15,6 +15,21 @@
 //    the loading icon generated with http://www.ajaxload.info/
 //    the other icons are from http://modernuiicons.com/
 
+// LICENSE INFORMATION:
+/*
+ * Copyright (c) 2014, reppets <all.you.need.is.word@gmail.com>
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+
 // ignore iframe/frame
 if (window.top != window.self) {
   return;
@@ -23,10 +38,7 @@ if (window.top != window.self) {
 // ====== OPTIONS ==============================================================
 
 // use lazy loading or not.
-// When it set to false, retrieve comments every page load. It fails sometimes when reloaded(?)
 var usesLazyLoad = true;
-
-
 
 // ====== CONSTANTS ============================================================
 const HATENA_FAVICON_URL = 'http://b.hatena.ne.jp/favicon.ico';
@@ -393,6 +405,7 @@ function retrieveComments(iframe) {
 				setMessage(iframe, 'コメント取得エラー : '+response.status + ' '+response.statusText);
 			} else if (response.responseText && response.responseText != 'null') {
 				var comments = JSON.parse(response.responseText);
+				var hasComment = false;
 				for (var i in comments.bookmarks) {
 					var user = comments.bookmarks[i].user;
 					var comment = comments.bookmarks[i].comment;
@@ -401,14 +414,14 @@ function retrieveComments(iframe) {
 						item.text(user+' : '+comment);
 						iframe.commentList.append(item);
 						iframe.commentList.isDisplayable = true;
-						var hasComment = true;
+						hasComment = true;
 					}
 				}
 				if (!hasComment) {
 					setMessage(iframe, MESSAGE_NO_COMMENT);
 				}
 			} else {
-				setMessage(MESSAGE_NO_COMMENT);
+				setMessage(iframe, MESSAGE_NO_COMMENT);
 			}
 			iframe.hatebuIcon.attr('src', HATENA_FAVICON_URL);
 
