@@ -13,7 +13,8 @@
 
 // INFO:
 //    the loading icon generated with http://www.ajaxload.info/
-//    the other icons are from http://modernuiicons.com/
+//    the other icons (except Hatena Bookmark icon) are from http://modernuiicons.com/
+//        under license of CC BY-ND(3.0) https://github.com/Templarian/WindowsIcons/blob/117f1a468f77248df87677e78e3453d07971ca55/WindowsPhone/license.txt
 
 // LICENSE INFORMATION:
 /*
@@ -330,7 +331,7 @@ function constructIFrame(iframe) {
 	iframe.commentList = $('#commentlist', iframe.body);
 	iframe.commentList.appear = showBlock;
 	iframe.commentList.disappear = hide;
-	iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
+	iframe.commentList.css('max-height',(Math.round(window.innerHeight*0.7)+'px'));
 	iframe.commentList.isDisplayable = false;
 
 	iframe.messageText = $('#message', iframe.body);
@@ -366,8 +367,11 @@ function constructIFrame(iframe) {
 	});
 
 	$(window).resize(function() {
-		iframe.commentList.css('max-height',(Math.round($(window).height()*0.7)+'px'));
+		iframe.commentList.css('max-height',(Math.round(window.innerHeight*0.7)+'px'));
 	});
+
+
+
 
 }
 
@@ -429,4 +433,3 @@ function retrieveComments(iframe) {
 		}
 	});
 }
-
