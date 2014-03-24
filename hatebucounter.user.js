@@ -9,6 +9,7 @@
 // @resource closeIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190145.png
 // @resource errorIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190147.png
 // @resource reloadIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223221947.png
+// @resource emptyHtml https://gist.githubusercontent.com/reppets/9743907/raw/e046b087b63a2de6a298f4b58d143cf9f619a9d0/empty.html
 // ==/UserScript==
 
 // INFO:
@@ -49,17 +50,30 @@ const UNLOCKED_ICON_URL = GM_getResourceURL('unlockedIcon');
 const CLOSE_ICON_URL = GM_getResourceURL('closeIcon');
 const ERROR_ICON_URL = GM_getResourceURL('errorIcon');
 const RELOAD_ICON_URL = GM_getResourceURL('reloadIcon');
+const EMPTY_HTML_URL = GM_getResourceURL('emptyHtml');
 
 const MESSAGE_NO_COMMENT = 'コメントはありません';
 
 const INTENTIONAL_RELOAD_DELAY_MSEC = 350;
 
 // ====== IFRAME CONTENTS ======================================================
-var iframeContents = '\
-<!DOCTYPE html>\
-<html>\
-  <head>\
-    <meta charset="UTF-8" />\
+
+var iframeBodyContent = '<div id="wrapper"><!--\
+      --><ul id="commentlist"></ul><!--\
+      --><div id="messageline"><!--\
+        --><span id="message"></span><!--\
+      --></div><!--\
+      --><div id="counterline"><!--\
+        --><img id="close" class="icon action" alt="閉じる" title="閉じる"><!--\
+        --><img id="lock" class="icon action" alt="ロックする" title="ロックする"><!--\
+        --><img id="reload" class="icon action" alt="リロード" title="リロード"><!--\
+        --><a id="hatebuentrylink" target="_blank"><img id="hatebufavicon" class="icon" alt="はてなブックマークエントリーページへ" title="はてなブックマークエントリーページへ"></a><!--\
+        --><span id="count"></span><!--\
+        --><img id="countloaderror" class="icon"><!--\
+      --></div><!--\
+    --></div>';
+
+var iframeHeadContent = '<meta charset="UTF-8" />\
     <title></title>\
     <style type="text/css">\
       * {\
@@ -129,26 +143,7 @@ var iframeContents = '\
         bottom: 0;\
         white-space: nowrap;\
       }\
-    </style>\
-  </head>\
-  <body><!--\
-    --><div id="wrapper"><!--\
-      --><ul id="commentlist"></ul><!--\
-      --><div id="messageline"><!--\
-        --><span id="message"></span><!--\
-      --></div><!--\
-      --><div id="counterline"><!--\
-        --><img id="close" class="icon action" alt="閉じる" title="閉じる"><!--\
-        --><img id="lock" class="icon action" alt="ロックする" title="ロックする"><!--\
-        --><img id="reload" class="icon action" alt="リロード" title="リロード"><!--\
-        --><a id="hatebuentrylink" target="_blank"><img id="hatebufavicon" class="icon" alt="はてなブックマークエントリーページへ" title="はてなブックマークエントリーページへ"></a><!--\
-        --><span id="count"></span><!--\
-        --><img id="countloaderror" class="icon"><!--\
-      --></div><!--\
-    --></div><!--\
-  --></body>\
-</html>\
-';
+    </style>';
 
 
 
@@ -194,15 +189,15 @@ var iframeStyle = {
 
 // ====== DOM CREATION =========================================================
 var iframe = $('<iframe/>');
+iframe.attr('src', EMPTY_HTML_URL);
 iframe.css(iframeStyle);
 $(document.body).append(iframe);
-iframe.ready(function() {
+iframe.load(function() {
 	var idoc = iframe.contents()[0];
-	idoc.open();
-	idoc.write(iframeContents);
-	idoc.close();
 	iframe.document = idoc;
 	iframe.body = $('body',idoc);
+	iframe.body.append(iframeBodyContent);
+	$('head',idoc).append(iframeHeadContent);
 	constructIFrame(iframe);
 	retrieveCount(iframe);
 	if (!usesLazyLoad) {
