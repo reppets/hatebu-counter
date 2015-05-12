@@ -10,6 +10,8 @@
 // @resource errorIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190147.png
 // @resource reloadIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223221947.png
 // @resource emptyHtml https://gist.githubusercontent.com/reppets/9743907/raw/e046b087b63a2de6a298f4b58d143cf9f619a9d0/empty.html
+// @grant GM_getResourceURL
+// @grant GM_xmlhttpRequest
 // ==/UserScript==
 
 // INFO:
@@ -173,7 +175,7 @@ var iframeStyle = {
 	,'bottom':'0px'
 	,'width':'auto'
 	,'height':'auto'
-	,'max-width':'50%'
+	,'max-width':'none'
 	,'min-width':'none'
 	,'max-height':'none'
 	,'min-height':'none'
