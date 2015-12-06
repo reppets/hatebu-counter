@@ -9,6 +9,7 @@
 // @resource closeIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190145.png
 // @resource errorIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190147.png
 // @resource reloadIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223221947.png
+// @resource hatebuFavicon http://b.hatena.ne.jp/favicon.ico
 // @grant GM_getResourceURL
 // @grant GM_xmlhttpRequest
 // ==/UserScript==
@@ -44,14 +45,13 @@ if (window.top != window.self) {
 var usesLazyLoad = true;
 
 // ====== CONSTANTS ============================================================
-const HATENA_FAVICON_URL = 'http://b.hatena.ne.jp/favicon.ico';
+const HATENA_FAVICON_URL = GM_getResourceURL('hatebuFavicon');
 const LOADING_ICON_URL = GM_getResourceURL('loadingIcon');
 const LOCKED_ICON_URL = GM_getResourceURL('lockedIcon');
 const UNLOCKED_ICON_URL = GM_getResourceURL('unlockedIcon');
 const CLOSE_ICON_URL = GM_getResourceURL('closeIcon');
 const ERROR_ICON_URL = GM_getResourceURL('errorIcon');
 const RELOAD_ICON_URL = GM_getResourceURL('reloadIcon');
-const EMPTY_HTML_URL = GM_getResourceURL('emptyHtml');
 
 const MESSAGE_NO_COMMENT = 'コメントはありません';
 
@@ -192,7 +192,6 @@ var iframeStyle = {
 var iframe = $('<iframe/>');
 iframe.attr('src', 'about:blank');
 iframe.css(iframeStyle);
-$(document.body).append(iframe);
 iframe.load(function() {
 	var idoc = iframe.contents()[0];
 	iframe.document = idoc;
@@ -205,6 +204,7 @@ iframe.load(function() {
 		retrieveComments(iframe);
 	}
 });
+$(document.body).append(iframe);
 
 function showInline() {
 	if (this.isDisplayable) {
@@ -322,7 +322,7 @@ function constructIFrame(iframe) {
 
 	// set other elements
 	iframe.entryLink = $('#hatebuentrylink', iframe.body);
-	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+document.URL.replace('http://',''));
+	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+ (document.URL.lastIndexOf('https://',0) < 0 ?  document.URL.replace('http://','') : document.URL.replace('https://','s/')));
 
 	iframe.commentList = $('#commentlist', iframe.body);
 	iframe.commentList.appear = showBlock;
