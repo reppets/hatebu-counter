@@ -2,14 +2,13 @@
 // @name hatebu-scouter
 // @namespace http://reppets.hatenablog.com/
 // @include *
-// @require http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
+// @require https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @resource loadingIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131208/20131208222202.gif
 // @resource lockedIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190146.png
 // @resource unlockedIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223181716.png
 // @resource closeIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190145.png
 // @resource errorIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190147.png
 // @resource reloadIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223221947.png
-// @resource emptyHtml https://gist.githubusercontent.com/reppets/9743907/raw/e046b087b63a2de6a298f4b58d143cf9f619a9d0/empty.html
 // @grant GM_getResourceURL
 // @grant GM_xmlhttpRequest
 // ==/UserScript==
@@ -191,7 +190,7 @@ var iframeStyle = {
 
 // ====== DOM CREATION =========================================================
 var iframe = $('<iframe/>');
-iframe.attr('src', EMPTY_HTML_URL);
+iframe.attr('src', 'about:blank');
 iframe.css(iframeStyle);
 $(document.body).append(iframe);
 iframe.load(function() {
