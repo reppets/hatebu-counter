@@ -1,6 +1,13 @@
 // ==UserScript==
-// @name hatebu-scouter
+// @name hatebu-counter
+// @name:ja-JP はてブカウンター
+// @description displays current page's Hatena Bookmark (http://b.hatena.ne.jp/) count and comments on a corner of the page.
+// @description:ja-JP 現在閲覧中のページの、はてなブックマーク数およびコメントをページ右下にコンパクトに表示するスクリプトです。
 // @namespace http://reppets.hatenablog.com/
+// @version 1.1.0
+// @compatible firefox (verified with 42.0)
+// @compatible chrome (verified with 47.0.2526.73 (Official Build))
+
 // @include *
 // @require https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
 // @resource loadingIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131208/20131208222202.gif
@@ -14,7 +21,7 @@
 // @grant GM_xmlhttpRequest
 // ==/UserScript==
 
-// INFO:
+// INFORMATION ABOUT IMAGE RESOURCES:
 //    the loading icon generated with http://www.ajaxload.info/
 //    the other icons (except Hatena Bookmark icon) are from http://modernuiicons.com/
 //        under license of CC BY-ND(3.0) https://github.com/Templarian/WindowsIcons/blob/117f1a468f77248df87677e78e3453d07971ca55/WindowsPhone/license.txt
@@ -365,9 +372,6 @@ function constructIFrame(iframe) {
 	$(window).resize(function() {
 		iframe.commentList.css('max-height',(Math.round(window.innerHeight*0.7)+'px'));
 	});
-
-
-
 
 }
 
