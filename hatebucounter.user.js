@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name hatebu-counter
-// @name:ja-JP はてブカウンター
+// @name:ja はてブカウンター
 // @description displays current page's Hatena Bookmark (http://b.hatena.ne.jp/) count and comments on a corner of the page.
-// @description:ja-JP 現在閲覧中のページの、はてなブックマーク数およびコメントをページ右下にコンパクトに表示するスクリプトです。
+// @description:ja 現在閲覧中のページの、はてなブックマーク数およびコメントをページ右下にコンパクトに表示するスクリプトです。
 // @namespace http://reppets.hatenablog.com/
-// @version 1.1.0
+// @version 1.1.1
 // @compatible firefox (verified with 42.0)
 // @compatible chrome (verified with 47.0.2526.73 (Official Build))
 
@@ -28,7 +28,7 @@
 
 // LICENSE INFORMATION:
 /*
- * Copyright (c) 2014, reppets <all.you.need.is.word@gmail.com>
+ * Copyright (c) 2014-2015, reppets <all.you.need.is.word@gmail.com>
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
