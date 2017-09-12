@@ -4,12 +4,14 @@
 // @description displays current page's Hatena Bookmark (http://b.hatena.ne.jp/) count and comments on a corner of the page.
 // @description:ja 現在閲覧中のページの、はてなブックマーク数およびコメントをページ右下にコンパクトに表示するスクリプトです。
 // @namespace http://reppets.hatenablog.com/
-// @version 1.1.1
-// @compatible firefox (verified with 42.0)
-// @compatible chrome (verified with 47.0.2526.73 (Official Build))
+// @version 1.1.2
+// @compatible firefox
+// @compatible chrome
 
 // @include *
-// @require https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
+// @noframes
+// @run-at document-end
+// @require https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js
 // @resource loadingIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131208/20131208222202.gif
 // @resource lockedIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223190146.png
 // @resource unlockedIcon http://cdn-ak.f.st-hatena.com/images/fotolife/r/reppets/20131223/20131223181716.png
@@ -28,7 +30,7 @@
 
 // LICENSE INFORMATION:
 /*
- * Copyright (c) 2014-2015, reppets <all.you.need.is.word@gmail.com>
+ * Copyright (c) 2014-2017, reppets <all.you.need.is.word@gmail.com>
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -40,11 +42,6 @@
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-// ignore iframe/frame
-if (window.top != window.self) {
-  return;
-}
 
 // ====== OPTIONS ==============================================================
 
@@ -329,7 +326,8 @@ function constructIFrame(iframe) {
 
 	// set other elements
 	iframe.entryLink = $('#hatebuentrylink', iframe.body);
-	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+ (document.URL.lastIndexOf('https://',0) < 0 ?  document.URL.replace('http://','') : document.URL.replace('https://','s/')));
+	let bookmarkUrl = getCanonicalUrlEncoded();
+	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+ (bookmarkUrl.lastIndexOf('https://',0) < 0 ?  bookmarkUrl.replace('http://','') : bookmarkUrl.replace('https://','s/')));
 
 	iframe.commentList = $('#commentlist', iframe.body);
 	iframe.commentList.appear = showBlock;
@@ -378,7 +376,7 @@ function constructIFrame(iframe) {
 function retrieveCount(iframe) {
 	GM_xmlhttpRequest({
 		method:'GET',
-		url:'http://api.b.st-hatena.com/entry.count?url='+encodeURIComponent(document.URL),
+		url:'http://api.b.st-hatena.com/entry.count?url='+getCanonicalUrlEncoded(),
 		onload: function(response) {
 			if (response.status >= 400) {
 				iframe.errorIcon.isDisplayable = true;
@@ -403,7 +401,7 @@ function retrieveCount(iframe) {
 function retrieveComments(iframe) {
 	GM_xmlhttpRequest({
 		method:'GET',
-		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(document.URL),
+		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+getCanonicalUrlEncoded(),
 		onload: function(response) {
 			if (response.status >= 400) {
 				iframe.setMessage('コメント取得エラー : '+response.status + ' '+response.statusText);
@@ -432,4 +430,13 @@ function retrieveComments(iframe) {
 			iframe.update();
 		}
 	});
+}
+
+function getCanonicalUrlEncoded() {
+    let e = $("link[rel='canonical']", document);
+    if (e.length===0) {
+        return encodeURIComponent(document.URL);
+    } else {
+        return encodeURIComponent(e.href);
+    }
 }
