@@ -437,6 +437,6 @@ function getCanonicalUrlEncoded() {
     if (e.length===0) {
         return encodeURIComponent(document.URL);
     } else {
-        return encodeURIComponent(e.href);
+        return encodeURIComponent(e.get(0).href);
     }
 }
