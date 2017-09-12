@@ -326,7 +326,7 @@ function constructIFrame(iframe) {
 
 	// set other elements
 	iframe.entryLink = $('#hatebuentrylink', iframe.body);
-	let bookmarkUrl = getCanonicalUrlEncoded();
+	let bookmarkUrl = getCanonicalUrl();
 	iframe.entryLink.attr('href', 'http://b.hatena.ne.jp/entry/'+ (bookmarkUrl.lastIndexOf('https://',0) < 0 ?  bookmarkUrl.replace('http://','') : bookmarkUrl.replace('https://','s/')));
 
 	iframe.commentList = $('#commentlist', iframe.body);
@@ -376,7 +376,7 @@ function constructIFrame(iframe) {
 function retrieveCount(iframe) {
 	GM_xmlhttpRequest({
 		method:'GET',
-		url:'http://api.b.st-hatena.com/entry.count?url='+getCanonicalUrlEncoded(),
+		url:'http://api.b.st-hatena.com/entry.count?url='+encodeURIComponent(getCanonicalUrl()),
 		onload: function(response) {
 			if (response.status >= 400) {
 				iframe.errorIcon.isDisplayable = true;
@@ -401,7 +401,7 @@ function retrieveCount(iframe) {
 function retrieveComments(iframe) {
 	GM_xmlhttpRequest({
 		method:'GET',
-		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+getCanonicalUrlEncoded(),
+		url:'http://b.hatena.ne.jp/entry/jsonlite/?url='+encodeURIComponent(getCanonicalUrl()),
 		onload: function(response) {
 			if (response.status >= 400) {
 				iframe.setMessage('コメント取得エラー : '+response.status + ' '+response.statusText);
@@ -432,11 +432,11 @@ function retrieveComments(iframe) {
 	});
 }
 
-function getCanonicalUrlEncoded() {
+function getCanonicalUrl() {
     let e = $("link[rel='canonical']", document);
     if (e.length===0) {
-        return encodeURIComponent(document.URL);
+        return document.URL;
     } else {
-        return encodeURIComponent(e.get(0).href);
+        return e.get(0).href;
     }
 }
